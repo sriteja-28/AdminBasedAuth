@@ -1,15 +1,17 @@
-// src/pages/Register.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Facebook, Google, LinkedIn } from "@mui/icons-material";
 import { query, collection, where, getDocs } from "firebase/firestore"; 
-import { 
-  auth, 
-  createUserWithEmailAndPassword, 
-  db, 
-  setDoc, 
-  doc, 
+
+
+import {
+  auth,
+  createUserWithEmailAndPassword,
+  db,
+  setDoc,
+  doc,
   signOut,
-  signInWithPopup 
+  signInWithPopup
 } from "../utils/firebase";
 import { Container, TextField, Button, Typography, Grid, Box, Avatar } from "@mui/material";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -24,63 +26,94 @@ export default function Register() {
   const navigate = useNavigate();
 
   const handleRegister = async () => {
-    if (!captchaVerified) {
-      alert("Please verify CAPTCHA.");
-      return;
-    }
-  
     try {
-      // Check if the email already exists in Firestore
+      //! Enable this when needed
+      // if (!captchaVerified) {
+      //   alert("Please verify CAPTCHA.");
+      //   return;
+      // }
+  
+    
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
   
       if (!querySnapshot.empty) {
-        alert("This account already exists. Please log in.");
+        const existingUser = querySnapshot.docs[0].data();
+        alert(
+          existingUser.authMethod === "email"
+            ? "This email is already registered. Please log in."
+            : `This email is already registered using ${existingUser.authMethod}. Please use that method to log in.`
+        );
         return;
       }
   
-      // Generate a temporary password
+      
       const tempPassword = generatePassword();
+  
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, tempPassword);
       const user = userCredential.user;
   
-      await setDoc(doc(db, "users", user.uid), {
-        name,
-        dob,
-        email,
-        isActive: false, // waiting for admin approval
-        authMethod: "email",
-        tempPassword, // stored for admin reference/emailing later
-      });
+      
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          name: name || "",
+          dob: dob || "",
+          email: user.email,
+          isActive: false, 
+          authMethod: "email",
+          tempPassword, 
+        },
+        { merge: true }
+      );
   
-      alert("Registered successfully! Waiting for admin approval. You will receive an email with your login credentials soon.");
+      alert(
+        "Registered successfully! Waiting for admin approval. You will receive an email with your login credentials soon."
+      );
   
-      // Sign out immediately so the user cannot access protected routes until activated.
       await signOut(auth);
       navigate("/login");
     } catch (error) {
-      alert(error.message);
+      console.error("Registration Error:", error);
+      alert(`${error.message} : Please try using other options`);
     }
+    
   };
-
+  
 
   const handleOAuthSignIn = async (provider) => {
     try {
+      
+      const providerId = provider.providerId;
+      
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-  
-      // Check if the email already exists in Firestore
+      
+    
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", user.email));
       const querySnapshot = await getDocs(q);
   
       if (!querySnapshot.empty) {
-        alert("This account already exists. Please log in.");
-        await signOut(auth);
-        return;
+        const existingUser = querySnapshot.docs[0].data();
+  
+        if (existingUser.authMethod !== providerId) {
+          alert(
+            `This email is already registered using ${existingUser.authMethod}. Please use that method to log in.`
+          );
+          await signOut(auth); 
+          return;
+        } else {
+          alert("This email is already registered. Please use another account.");
+          await signOut(auth);
+          return;
+        }
       }
   
+      
       await setDoc(
         doc(db, "users", user.uid),
         {
@@ -88,7 +121,7 @@ export default function Register() {
           email: user.email,
           dob: "",
           isActive: false,
-          authMethod: provider.providerId,
+          authMethod: providerId,
         },
         { merge: true }
       );
@@ -97,9 +130,12 @@ export default function Register() {
       await signOut(auth);
       navigate("/login");
     } catch (error) {
-      alert(error.message);
+      console.error("Registration Error:", error);
+      alert(`${error.message} : Please try using other options`);
     }
+    
   };
+  
   
 
   return (
@@ -167,33 +203,61 @@ export default function Register() {
             variant="contained"
             color="error"
             fullWidth
-            sx={{ borderRadius: "50px", fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+            sx={{
+              borderRadius: "50px",
+              fontSize: { xs: "0.7rem", sm: "0.8rem" },
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
             onClick={() => handleOAuthSignIn(googleProvider)}
           >
+            <Google sx={{ fontSize: "1.2rem" }} />
             Google
           </Button>
+
+
         </Grid>
         <Grid item xs={12} sm={4}>
+
           <Button
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ borderRadius: "50px", fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+            sx={{
+              borderRadius: "50px",
+              fontSize: { xs: "0.7rem", sm: "0.8rem" },
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
             onClick={() => handleOAuthSignIn(facebookProvider)}
           >
+            <Facebook sx={{ fontSize: "1.2rem" }} />
             Facebook
           </Button>
+
         </Grid>
         <Grid item xs={12} sm={4}>
           <Button
             variant="contained"
             color="info"
             fullWidth
-            sx={{ borderRadius: "50px", fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+            sx={{
+              borderRadius: "50px",
+              fontSize: { xs: "0.7rem", sm: "0.8rem" },
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
             onClick={() => handleOAuthSignIn(linkedinProvider)}
           >
+            <LinkedIn sx={{ fontSize: "1.2rem" }} />
             LinkedIn
           </Button>
+
+
+
         </Grid>
       </Grid>
       <Typography variant="body2" align="center" sx={{ mt: 2 }}>

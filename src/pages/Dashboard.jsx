@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { auth, signOut } from "../utils/firebase";
@@ -20,6 +19,9 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+
+  
+  const isEmailAuth = user?.authMethod === "email";
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -50,19 +52,25 @@ export default function Dashboard() {
           <Typography variant="body1" gutterBottom>
             Your access is activated.
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setOpen(true)}
-            sx={{ mr: 2 }}
-          >
-            Change Password
-          </Button>
+
+         
+          {isEmailAuth && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpen(true)}
+              sx={{ mr: 2 }}
+            >
+              Change Password
+            </Button>
+          )}
+
           <Button variant="contained" color="secondary" onClick={handleLogout}>
             Logout
           </Button>
         </CardContent>
       </Card>
+
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
