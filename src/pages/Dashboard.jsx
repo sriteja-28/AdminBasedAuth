@@ -20,8 +20,10 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-  
+
   const isEmailAuth = user?.authMethod === "email";
+  const isPass = user?.tempPassword === "defaultPassword123";
+
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -47,14 +49,16 @@ export default function Dashboard() {
       <Card sx={{ mt: 4 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
-            Welcome, {user?.email}
+            Welcome, {user?.name} <br />
+            {user?.email} <br />
+
           </Typography>
           <Typography variant="body1" gutterBottom>
             Your access is activated.
           </Typography>
 
-         
-          {isEmailAuth && (
+
+          {(isEmailAuth && isPass) && (
             <Button
               variant="contained"
               color="primary"

@@ -9,6 +9,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
 import ErrorPage from "./pages/ErrorPage";
+import { PendingApproval, RegistrationSuccess } from "./pages/Alerts";
+
 
 function App() {
   return (
@@ -19,8 +21,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/error" element={<ErrorPage />} />
+          <Route path="/regSucess" element={<RegistrationSuccess/> } />
+          <Route path="/pApprov" element={<PendingApproval/>} />
           <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />     
           </Route>
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminPanel />} />

@@ -4,6 +4,7 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   FacebookAuthProvider,
+  GithubAuthProvider,
   OAuthProvider,
   signInWithPopup, 
   createUserWithEmailAndPassword, 
@@ -39,14 +40,16 @@ const db = getFirestore(app);
 // OAuth Providers
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
-const linkedinProvider = new OAuthProvider("linkedin.com");
+const githubProvider = new GithubAuthProvider();
+const microsoftProvider = new OAuthProvider('microsoft.com');
 
 export { 
   auth, 
   db, 
   googleProvider, 
   facebookProvider, 
-  linkedinProvider,
+  githubProvider,
+  microsoftProvider,
   signInWithPopup, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
