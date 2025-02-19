@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db, onAuthStateChanged, doc, getDoc } from "../utils/firebase";
 
@@ -17,7 +16,6 @@ export function AuthProvider({ children }) {
         if (userDoc.exists()) {
           userData = userDoc.data();
         }
-        // Compare emails (you might want to use .toLowerCase() for both sides)
         const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
         if (firebaseUser.email.toLowerCase() === adminEmail.toLowerCase()) {
           userData.isAdmin = true;
@@ -43,5 +41,3 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-
-

@@ -39,13 +39,11 @@ export default function AdminPanel() {
   const handleToggleActivation = async (user) => {
     const newStatus = !user.isActive;
     
-    
     let tempPassword = user.tempPassword;
     if (newStatus && !tempPassword) {
       tempPassword = generatePassword(); 
     }
 
-    
     const updateData = { isActive: newStatus };
     if (!user.tempPassword && newStatus) {
       updateData.tempPassword = tempPassword; 
@@ -61,7 +59,6 @@ export default function AdminPanel() {
 
     console.log(`User ${user.email} status changed to: ${newStatus ? "Active" : "Inactive"}`);
 
-    
     const templateParams = {
       to_name: user.name || "User",
       to_email: user.email,
@@ -77,8 +74,7 @@ export default function AdminPanel() {
 
       emailjs
         .send(
-
-          //!enable for production
+          // !enable for production
           // import.meta.env.VITE_EMAILJS_SERVICE_ID,
           // import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
           // templateParams,

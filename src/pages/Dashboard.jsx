@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Avatar,
 } from "@mui/material";
 
 export default function Dashboard() {
@@ -20,10 +21,8 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-
   const isEmailAuth = user?.authMethod === "email";
-  const isPass = user?.tempPassword === "defaultPassword123";
-
+  const isPass = user?.tempPassword;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -48,16 +47,22 @@ export default function Dashboard() {
     <Container maxWidth="sm">
       <Card sx={{ mt: 4 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>
-            Welcome, {user?.name} <br />
-            {user?.email} <br />
-
+          {user?.photoUrl && (
+            <Avatar
+              src={user.photoUrl}
+              alt={user?.name}
+              sx={{ width: 80, height: 80, mb: 2, mx: "auto" }}
+            />
+          )}
+          <Typography variant="h4" gutterBottom align="center">
+            Welcome, {user?.name}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body1" gutterBottom align="center">
+            {user?.email}
+          </Typography>
+          <Typography variant="body1" gutterBottom align="center">
             Your access is activated.
           </Typography>
-
-
           {(isEmailAuth && isPass) && (
             <Button
               variant="contained"
@@ -68,7 +73,6 @@ export default function Dashboard() {
               Change Password
             </Button>
           )}
-
           <Button variant="contained" color="secondary" onClick={handleLogout}>
             Logout
           </Button>

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Facebook, GitHub, Google, Microsoft } from "@mui/icons-material";
-import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { grey, deepPurple } from "@mui/material/colors";
-
 import {
   auth,
   db,
@@ -15,7 +13,6 @@ import {
   microsoftProvider,
   doc,
   getDoc,
-  setDoc,
   signOut,
   sendPasswordResetEmail
 } from "../utils/firebase";
@@ -40,12 +37,11 @@ export default function Login() {
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
 
-
   const handleLogin = async () => {
-
-    //!enable when u need
+    //!Enable for production
     // if (!captchaVerified) {
     //   alert("Please verify CAPTCHA");
     //   return;
@@ -55,7 +51,6 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       console.log("User logged in:", firebaseUser);
-      
 
       const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
       const userDocRef = doc(db, "users", firebaseUser.uid);
@@ -76,56 +71,44 @@ export default function Login() {
         return;
       }
 
-      navigate(firebaseUser.email.toLowerCase() === adminEmail.toLowerCase() ? "/admin" : "/dashboard");
+      navigate(
+        firebaseUser.email.toLowerCase() === adminEmail.toLowerCase() ? "/admin" : "/dashboard"
+      );
     } catch (error) {
       console.error("Login error:", error);
       alert(`Error: ${error.message}`);
     }
   };
 
-const handleSocialLogin = async (provider) => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+  const handleSocialLogin = async (provider) => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
 
-    const signInMethods = await fetchSignInMethodsForEmail(auth, user.email);
-
-    if (signInMethods.includes("password") && provider.providerId !== "password") {
-      alert("This email was registered with email & password. Please log in using that method.");
-      await signOut(auth);
-      return;
-    }
-
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      const userData = userSnap.data();
-      if (userData.isActive) {
-        navigate("/dashboard");
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        if (userData.isActive) {
+          navigate("/dashboard");
+        } else {
+          alert("Your account is not activated. Please wait for admin approval.");
+          await signOut(auth);
+          navigate("/pApprov");
+        }
       } else {
-        alert("Your account is not activated. Please wait for admin approval.");
+        alert("User record not found. Contact support.");
         await signOut(auth);
-        navigate("/pApprov");
       }
-    } else {
-      alert("User record not found. Contact support.");
-      await signOut(auth);
+    } catch (error) {
+      console.error("Social login error:", error);
+      if (error.code === "auth/popup-blocked") {
+      } else {
+        alert(`Error: ${error.message}`);
+      }
     }
-  } catch (error) {
-    console.error("Social login error:", error);
-    if (error.code === "auth/popup-blocked") {
-      await signInWithRedirect(auth, provider);
-    } else {
-      alert(`Error: ${error.message}`);
-    }
-  }
-};
-
-
-
-
+  };
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) {
@@ -136,10 +119,12 @@ const handleSocialLogin = async (provider) => {
       await sendPasswordResetEmail(auth, forgotEmail);
       alert("Password reset email sent! Check your inbox.");
       setOpenForgotPassword(false);
+      
     } catch (error) {
       alert(error.message);
     }
   };
+  
 
   return (
     <Container
@@ -222,7 +207,6 @@ const handleSocialLogin = async (provider) => {
         <Grid item xs={6} sm={6} md={6}>
           <Button
             variant="contained"
-
             fullWidth
             sx={{
               borderRadius: "50px",
@@ -243,7 +227,6 @@ const handleSocialLogin = async (provider) => {
         <Grid item xs={6} sm={6} md={6}>
           <Button
             variant="contained"
-
             fullWidth
             sx={{
               borderRadius: "50px",
@@ -284,14 +267,10 @@ const handleSocialLogin = async (provider) => {
 
       <Typography variant="body2" align="center" sx={{ mt: 2 }}>
         Don't have an account?{" "}
-        <Button
-          onClick={() => navigate("/register")}
-          sx={{ textTransform: "none", color: "blue" }}
-        >
+        <Button onClick={() => navigate("/register")} sx={{ textTransform: "none", color: "blue" }}>
           Register here
         </Button>
       </Typography>
-
 
       <Dialog open={openForgotPassword} onClose={() => setOpenForgotPassword(false)}>
         <DialogTitle>Reset Password</DialogTitle>

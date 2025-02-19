@@ -6,7 +6,6 @@ export default function PrivateRoute() {
   const { user, loading } = useAuth();
 
   if (loading) return <p>Loading...</p>;
-  // If not logged in, or account is not active (unless admin), redirect to login
   if (!user || (!user.isActive && !user.isAdmin)) return <Navigate to="/login" />;
 
   return <Outlet />;

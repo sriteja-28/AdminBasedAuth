@@ -1,4 +1,3 @@
-// src/utils/firebase.js
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
@@ -22,6 +21,7 @@ import {
   collection, 
   getDocs 
 } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -36,8 +36,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-// OAuth Providers
+
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 const githubProvider = new GithubAuthProvider();
@@ -46,6 +47,7 @@ const microsoftProvider = new OAuthProvider('microsoft.com');
 export { 
   auth, 
   db, 
+  storage,
   googleProvider, 
   facebookProvider, 
   githubProvider,
