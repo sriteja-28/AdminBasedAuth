@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { auth, signOut } from "../utils/firebase";
-import { updatePassword } from "firebase/auth";
+import { auth, signOut, db } from "../utils/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+
 import {
   Container,
   Typography,
@@ -20,6 +22,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const isEmailAuth = user?.authMethod === "email";
   const isPass = user?.tempPassword;
@@ -34,10 +37,31 @@ export default function Dashboard() {
         alert("Password must be at least 8 characters long");
         return;
       }
-      await updatePassword(auth.currentUser, newPassword);
+
+      if (!currentPassword) {
+        alert("Please enter your current password");
+        return;
+      }
+
+      const user = auth.currentUser;
+
+      
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      
+      await updatePassword(user, newPassword);
+
+  
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, { tempPassword: newPassword }, { merge: true });
+
+      
+      setNewPassword("");
+      setCurrentPassword("");
       alert("Password updated successfully");
       setOpen(false);
-      setNewPassword("");
+      
     } catch (error) {
       alert(error.message);
     }
@@ -84,6 +108,15 @@ export default function Dashboard() {
         <DialogContent>
           <TextField
             autoFocus
+            margin="dense"
+            label="Current Password"
+            type="password"
+            fullWidth
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+         
+          <TextField
             margin="dense"
             label="New Password"
             type="password"

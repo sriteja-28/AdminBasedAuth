@@ -10,7 +10,8 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  updatePassword,reauthenticateWithCredential, EmailAuthProvider 
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -63,5 +64,8 @@ export {
   getDoc, 
   updateDoc, 
   collection, 
-  getDocs 
+  getDocs,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider 
 };
